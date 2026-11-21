@@ -176,10 +176,13 @@ st.markdown("""
 # ==========================================
 # 3. UTILIDADES: ESCUDO UNAM Y DATOS EN CACHÉ
 # ==========================================
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 def get_logo_html():
     for fname in ["escudo_unam.png", "escudo_unam.jpg", "escudo_fi.png", "logo_unam.png"]:
-        if os.path.exists(fname):
-            with open(fname, "rb") as f:
+        fpath = os.path.join(BASE_DIR, fname)
+        if os.path.exists(fpath):
+            with open(fpath, "rb") as f:
                 b64 = base64.b64encode(f.read()).decode()
             ext = "png" if fname.endswith(".png") else "jpeg"
             return f'<img src="data:image/{ext};base64,{b64}" class="hero-logo" alt="Escudo UNAM">'
@@ -191,7 +194,8 @@ def get_logo_html():
 
 @st.cache_data
 def cargar_datos():
-    df = pd.read_csv("Social_media_impact_on_life.csv")
+    csv_path = os.path.join(BASE_DIR, "Social_media_impact_on_life.csv")
+    df = pd.read_csv(csv_path)
     df_clean = df.copy()
     df_clean["Perceived_Stress_Score"] = df_clean["Perceived_Stress_Score"].fillna(df_clean["Perceived_Stress_Score"].median())
     df_clean["Academic_Performance_GPA"] = df_clean["Academic_Performance_GPA"].fillna(df_clean["Academic_Performance_GPA"].median())
