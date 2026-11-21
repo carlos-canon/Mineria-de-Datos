@@ -24,10 +24,8 @@ st.set_page_config(
 )
 
 # ==========================================
-# 2. CSS MODERNO Y ADAPTATIVO (DARK / LIGHT / SYSTEM)
+# 2. CSS MODERNO, ADAPTATIVO Y RESPONSIVE (PC + CELULAR)
 # ==========================================
-# Usa variables nativas de Streamlit para que el selector nativo
-# (Menú ⋮ -> Settings -> Theme: System / Light / Dark) funcione a la perfección.
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
@@ -36,7 +34,6 @@ st.markdown("""
         font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
     }
 
-    /* Ajustar padding superior para aprovechar el ancho completo */
     .block-container {
         padding-top: 1.5rem;
         padding-bottom: 3rem;
@@ -93,6 +90,8 @@ st.markdown("""
         font-weight: 800;
         margin: 0;
         line-height: 1.2;
+        word-break: normal;
+        overflow-wrap: break-word;
     }
     .hero-subtitle {
         color: rgba(255, 255, 255, 0.82) !important;
@@ -125,7 +124,7 @@ st.markdown("""
         box-shadow: 0 8px 20px rgba(0, 0, 0, 0.14);
     }
 
-    /* Pestañas estilo píldora moderna (Google Trends / SaaS) */
+    /* Pestañas estilo píldora moderna */
     .stTabs [data-baseweb="tab-list"] {
         gap: 8px;
         background-color: var(--secondary-background-color);
@@ -133,6 +132,7 @@ st.markdown("""
         border-radius: 14px;
         border: 1px solid rgba(128, 128, 128, 0.2);
         margin-bottom: 1.2rem;
+        overflow-x: auto;
     }
     .stTabs [data-baseweb="tab"] {
         border-radius: 10px;
@@ -140,6 +140,7 @@ st.markdown("""
         font-weight: 600;
         font-size: 0.9rem;
         border: none !important;
+        white-space: nowrap;
         transition: all 0.2s ease;
     }
     .stTabs [aria-selected="true"] {
@@ -148,7 +149,7 @@ st.markdown("""
         box-shadow: 0 3px 10px rgba(27, 54, 93, 0.35);
     }
 
-    /* Botones principales atractivos */
+    /* Botones principales */
     .stButton > button, .stFormSubmitButton > button {
         border-radius: 10px !important;
         font-weight: 700 !important;
@@ -170,11 +171,58 @@ st.markdown("""
         border-radius: 16px !important;
         border-color: rgba(128, 128, 128, 0.22) !important;
     }
+
+    /* ==========================================
+       AJUSTES EXCLUSIVOS PARA CELULAR (<= 768px)
+       No modifica nada en computadora
+       ========================================== */
+    @media (max-width: 768px) {
+        .block-container {
+            padding-top: 0.8rem !important;
+            padding-left: 0.8rem !important;
+            padding-right: 0.8rem !important;
+        }
+        .hero-banner {
+            padding: 1.25rem 1rem !important;
+            gap: 1rem !important;
+            text-align: center;
+        }
+        .hero-left {
+            flex-direction: column !important;
+            align-items: center !important;
+            min-width: 100% !important;
+            gap: 0.75rem !important;
+        }
+        .hero-logo {
+            width: 60px !important;
+            height: 60px !important;
+        }
+        .hero-title {
+            font-size: 1.32rem !important;
+            line-height: 1.25 !important;
+        }
+        .hero-subtitle {
+            font-size: 0.84rem !important;
+        }
+        .hero-meta {
+            width: 100% !important;
+            text-align: center !important;
+            font-size: 0.78rem !important;
+            padding: 0.6rem 0.8rem !important;
+        }
+        div[data-testid="metric-container"] {
+            padding: 0.75rem 0.9rem !important;
+        }
+        .stTabs [data-baseweb="tab"] {
+            padding: 8px 12px !important;
+            font-size: 0.82rem !important;
+        }
+    }
 </style>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 3. UTILIDADES: ESCUDO UNAM Y DATOS EN CACHÉ
+# 3. UTILIDADES: RUTAS AUTOMÁTICAS Y DATOS
 # ==========================================
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -230,17 +278,19 @@ def entrenar_modelo(df):
     return pipe, acc, importances
 
 def estilo_plotly(fig):
-    """Hace que las gráficas sean transparentes para adaptarse a Dark Mode y Light Mode."""
+    """Gráficas limpias y adaptativas (Dark/Light y sin solapamientos en celular)."""
     fig.update_layout(
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
         font=dict(family="Plus Jakarta Sans, sans-serif"),
-        margin=dict(l=20, r=20, t=35, b=20),
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+        margin=dict(l=10, r=10, t=20, b=50),
+        legend=dict(orientation="h", yanchor="top", y=-0.18, xanchor="center", x=0.5, title_text="")
     )
     fig.update_xaxes(showgrid=True, gridcolor="rgba(128,128,128,0.15)", zeroline=False)
     fig.update_yaxes(showgrid=True, gridcolor="rgba(128,128,128,0.15)", zeroline=False)
     return fig
+
+PLOTLY_CFG = {"displayModeBar": False}
 
 df_raw, df = cargar_datos()
 rf_model, rf_acc, feat_imp = entrenar_modelo(df_raw)
@@ -267,7 +317,7 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 5. BARRA DE FILTROS HORIZONTAL (ESTILO GOOGLE TRENDS)
+# 5. BARRA DE FILTROS HORIZONTAL
 # ==========================================
 with st.container(border=True):
     f_col1, f_col2, f_col3, f_col4 = st.columns([2.2, 1.5, 1.1, 1.6])
@@ -302,7 +352,6 @@ with st.container(border=True):
             step=0.5
         )
 
-# Aplicar filtros
 df_filt = df[
     (df["Primary_Platform"].isin(plataformas)) &
     (df["Academic_Level"].isin(niveles)) &
@@ -357,7 +406,7 @@ with tab1:
                 opacity=0.72
             )
             fig_scatter.add_vline(x=6.25, line_dash="dash", line_color="#E74C3C", annotation_text="Umbral: 6.25h")
-            st.plotly_chart(estilo_plotly(fig_scatter), use_container_width=True)
+            st.plotly_chart(estilo_plotly(fig_scatter), use_container_width=True, config=PLOTLY_CFG)
 
     with c2:
         with st.container(border=True):
@@ -372,7 +421,7 @@ with tab1:
                 color_discrete_map=COLOR_MAP,
                 labels={"Primary_Platform": "Plataforma", "Overall_Impact": "Impacto"}
             )
-            st.plotly_chart(estilo_plotly(fig_bar), use_container_width=True)
+            st.plotly_chart(estilo_plotly(fig_bar), use_container_width=True, config=PLOTLY_CFG)
 
     c3, c4 = st.columns(2)
     with c3:
@@ -387,7 +436,7 @@ with tab1:
                 labels={"Overall_Impact": "Impacto Global", "Daily_Usage_Hours": "Horas Diarias"}
             )
             fig_box.add_hline(y=5.85, line_dash="dash", line_color="#E74C3C", annotation_text="Umbral Apriori: 5.85h")
-            st.plotly_chart(estilo_plotly(fig_box), use_container_width=True)
+            st.plotly_chart(estilo_plotly(fig_box), use_container_width=True, config=PLOTLY_CFG)
 
     with c4:
         with st.container(border=True):
@@ -408,7 +457,7 @@ with tab1:
                 text_auto=".2f",
                 color_discrete_map={"Sí": "#E74C3C", "No": "#3498DB"}
             )
-            st.plotly_chart(estilo_plotly(fig_noct), use_container_width=True)
+            st.plotly_chart(estilo_plotly(fig_noct), use_container_width=True, config=PLOTLY_CFG)
 
 # --- TAB 2: CORRELACIONES, APRIORI Y CLUSTERING ---
 with tab2:
@@ -427,7 +476,7 @@ with tab2:
             fig_corr = px.imshow(
                 corr, text_auto=True, color_continuous_scale="RdBu_r", zmin=-1, zmax=1, aspect="auto"
             )
-            st.plotly_chart(estilo_plotly(fig_corr), use_container_width=True)
+            st.plotly_chart(estilo_plotly(fig_corr), use_container_width=True, config=PLOTLY_CFG)
 
     with col_b:
         with st.container(border=True):
@@ -453,7 +502,7 @@ with tab2:
                     labels={"Daily_Usage_Hours": "Uso Diario (h)", "Sleep_Duration_Hours": "Horas de Sueño"},
                     color_discrete_sequence=["#3498DB", "#E74C3C", "#F39C12"]
                 )
-                st.plotly_chart(estilo_plotly(fig_km), use_container_width=True)
+                st.plotly_chart(estilo_plotly(fig_km), use_container_width=True, config=PLOTLY_CFG)
 
 # --- TAB 3: MODELOS Y CAJA BLANCA ---
 with tab3:
@@ -473,7 +522,7 @@ with tab3:
                 color_discrete_sequence=["#3498DB", "#D4AF37"]
             )
             fig_mod.update_yaxes(range=[85, 101])
-            st.plotly_chart(estilo_plotly(fig_mod), use_container_width=True)
+            st.plotly_chart(estilo_plotly(fig_mod), use_container_width=True, config=PLOTLY_CFG)
 
     with c2:
         with st.container(border=True):
@@ -485,7 +534,7 @@ with tab3:
                 text_auto=".1f", color="Importancia (%)", color_continuous_scale="Blues"
             )
             fig_imp.update_layout(coloraxis_showscale=False)
-            st.plotly_chart(estilo_plotly(fig_imp), use_container_width=True)
+            st.plotly_chart(estilo_plotly(fig_imp), use_container_width=True, config=PLOTLY_CFG)
             st.info("💡 **Hallazgo disruptivo:** Conocer qué red social usa el estudiante aporta **menos del 1%** al poder predictivo del modelo.")
 
 # --- TAB 4: SIMULADOR PREDICTIVO ---
@@ -550,4 +599,4 @@ with tab4:
                 prob_df = pd.DataFrame({"Clase": clases, "Probabilidad (%)": probs * 100})
                 fig_p = px.bar(prob_df, x="Clase", y="Probabilidad (%)", color="Clase", color_discrete_map=COLOR_MAP, text_auto=".1f")
                 fig_p.update_yaxes(range=[0, 108])
-                st.plotly_chart(estilo_plotly(fig_p), use_container_width=True)
+                st.plotly_chart(estilo_plotly(fig_p), use_container_width=True, config=PLOTLY_CFG)
